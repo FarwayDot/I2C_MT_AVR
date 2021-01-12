@@ -1,0 +1,5 @@
+#Ignorar archivos del atmel studio 7
+
+Debug/
+*.xml
+*.cproj
