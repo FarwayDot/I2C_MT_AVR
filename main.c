@@ -35,6 +35,14 @@
 #define SDA					4
 #define SCL					5
 
+
+/*Declaración de funciones*/
+void TWI_MT_Start_Condition(void);
+void TWI_MT_Address(uint8_t address, uint8_t r_nw)
+void TWI_MT_Data(uint8_t data);
+void TWI_MT_Stop_Condition(void);
+void TWI_MT_Re_Start_Condition(void);
+
 /*Función principal*/
 void main(void)
 {	
@@ -54,86 +62,117 @@ void main(void)
 		
     while (1) 
     {	
-		/************************************************************************/
-		/* BIT START */
-		/************************************************************************/
-		
-		//Inicialización de la bandera, bit start y habilitamos el i2c
-		TWCR = (1<<TWINT) | (1<<TWSTA) |(1<<TWEN);
-		
-		//Bandera para el START
-		while(!(TWCR & (1<<TWINT))); 
-		
-		//Checkeamos el estado según la tabla del datasheet
-		if((TWSR & 0xF8) != STA_START)
-		{
-			PORTB |= (1<<LED1);
-		}	
-		
-		/************************************************************************/
-		/* DIRECCION Y R/nW */
-		/************************************************************************/
-		
-		//Cargamos el valor de la dirección(1) y write(0)
-		TWDR = 0b00000010;
-		//Según datasheet se limpia la bandera después de cargar el valor 
-		TWCR = (1<<TWINT) | (1<<TWEN);
-		
-		while(!(TWCR & (1<<TWINT))); 
-		
-		if((TWSR & 0xF8) != STA_SLA_W_ACK)
-		{
-			PORTB |= (1<<LED1);
-		}
-	
-		/************************************************************************/
-		/* DATA (8bits) */
-		/************************************************************************/
-	
-		//Cargamos el valor de la data, nuestro caso, letra 'A'
-		TWDR = 0b01000001;
-		//Limpiamos la bandera y seguimos el proceso
-		TWCR = (1<<TWINT) | (1<<TWEN);
-		
-		//Esperamos la bander por enviar la data
-		while(!(TWCR & (1<<TWINT))); 
-			
-		//Checkeamos si es la bandera del ACK del receptor
-		if((TWSR & 0xF8) != STA_DATA_ACK)
-		{
-			PORTB |= (1<<LED1);
-		}
-		
-		/************************************************************************/
-		/* STOP */
-		/************************************************************************/
-		
-		////Limpiamos la bandera y seguimos con el STOP condition	
-		//TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWSTO);
-		//
-		////Esperamos la bandera
-		//while(!(TWCR & (1<<TWINT)));
-		//
-		//if((TWSR & 0xF8) != STA_DATA_NACK)
-		//{
-			//PORTB |= (1<<LED1);
-		//}
-		
-		/************************************************************************/
-		/* REPEATED START */
-		/************************************************************************/
-		
-		//Repeated start
-		TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWSTA);	
-		//Limpiamos la bandera
-		while(!(TWCR & (1<<TWINT)));
-		
-		//Checkeamos si se env+ia el re-start
-		if((TWSR & 0xF8) != STA_RE_START)
-		{
-			PORTB |= (1<<LED1);
-		}
 		
     }
 }
 
+void TWI_MT_Start_Condition()
+{
+	
+	/************************************************************************/
+	/* BIT START */
+	/************************************************************************/
+	
+	//Inicialización de la bandera, bit start y habilitamos el i2c
+	TWCR = (1<<TWINT) | (1<<TWSTA) |(1<<TWEN);
+	
+	//Bandera para el START
+	while(!(TWCR & (1<<TWINT)));
+	
+	//Checkeamos el estado según la tabla del datasheet
+	if((TWSR & 0xF8) != STA_START)
+	{
+		PORTB |= (1<<LED1);
+	}
+	
+}
+
+void TWI_MT_Address(uint8_t address, uint8_t r_nw)
+{
+	
+	/************************************************************************/
+	/* DIRECCION Y R/nW */
+	/************************************************************************/
+	//Cargamos el valor de la dirección(1) y write(0)
+	TWDR = (address<<1) | r_nw ;
+	//Según datasheet se limpia la bandera después de cargar el valor 
+	TWCR = (1<<TWINT) | (1<<TWEN);
+	
+	while(!(TWCR & (1<<TWINT))); 
+		
+	if((TWSR & 0xF8) != STA_SLA_W_ACK)
+	{
+		PORTB |= (1<<LED1);
+	}
+	
+}
+
+void TWI_MT_Data(uint8_t data)
+{
+	
+	/************************************************************************/
+	/* DATA (8bits) */
+	/************************************************************************/
+	
+	//Cargamos el valor de la data, nuestro caso, letra 'A'
+	TWDR = data;
+	//Limpiamos la bandera y seguimos el proceso
+	TWCR = (1<<TWINT) | (1<<TWEN);
+	
+	//Esperamos la bander por enviar la data
+	while(!(TWCR & (1<<TWINT)));
+	
+	//Checkeamos si es la bandera del ACK del receptor
+	if((TWSR & 0xF8) != STA_DATA_ACK)
+	{
+		PORTB |= (1<<LED1);
+	}
+	
+}
+
+void TWI_MT_Re_Start_Condition()
+{
+	/************************************************************************/
+	/* REPEATED START */
+	/************************************************************************/
+	
+	//Repeated start
+	TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWSTA);
+	//Limpiamos la bandera
+	while(!(TWCR & (1<<TWINT)));
+	
+	//Checkeamos si se env+ia el re-start
+	if((TWSR & 0xF8) != STA_RE_START)
+	{
+		PORTB |= (1<<LED1);
+	}
+}
+
+void TWI_MT_Stop_Condition()
+{
+
+	/************************************************************************/
+	/* STOP */
+	/************************************************************************/
+		
+	//Limpiamos la bandera y seguimos con el STOP condition
+	TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWSTO);
+	
+}
+
+void TWI_MT_Write_Data(uint8_t address, uint8_t n_data)
+{
+	uint8_t i = 0;
+	
+	TWI_MT_Start_Condition();
+	
+	TWI_MT_Address(address,0);
+	
+	for(i = 0; i<n_data; i++)
+	{
+		TWI_MT_Data()
+	}
+	
+	TWI_MT_Stop_Condition();
+	
+}
