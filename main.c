@@ -62,11 +62,11 @@ int main(void)
 	return 0;
 }
 
+
 /************************************************************************/
 /* START CONDITION : Inicia el TWI , y devuelve un valor de error si el 
 	estado no es el correcto */
 /************************************************************************/
-
 uint8_t TWI_MT_Start_Condition(void)
 {
 	//Inicializamos el estado del TWI, si cambia, entonces ocurrirá un error
@@ -93,7 +93,6 @@ uint8_t TWI_MT_Start_Condition(void)
 /* DIRECCION Y R/nW: Carga la dirección(7bits) y si se quiere leer o escribir 
 Nota: No se actualiza aún si se quiere leer*/
 /************************************************************************/
-
 uint8_t TWI_MT_Address(uint8_t address, uint8_t r_nw)
 {
 	
@@ -124,11 +123,10 @@ uint8_t TWI_MT_Address(uint8_t address, uint8_t r_nw)
 	return salida;
 }
 
+
 /************************************************************************/
 /* DATA (8bits): Cargar data de 8 bits*/
 /************************************************************************/
-
-
 uint8_t TWI_MT_Data_Upload(uint8_t data)
 {
 	uint8_t salida = TWI_OK;
@@ -150,10 +148,10 @@ uint8_t TWI_MT_Data_Upload(uint8_t data)
 	return salida;
 }
 
+
 /************************************************************************/
 /* REPEATED START: En el casi que queremos seguir enviando*/
 /************************************************************************/
-
 uint8_t TWI_MT_Re_Start_Condition(void)
 {
 	uint8_t salida = TWI_OK;
@@ -172,10 +170,10 @@ uint8_t TWI_MT_Re_Start_Condition(void)
 	return salida;
 }
 
+
 /************************************************************************/
 /* STOP CONDITION: Detener el periférico TWI*/
 /************************************************************************/
-
 void TWI_MT_Stop_Condition(void)
 {
 	
@@ -184,6 +182,10 @@ void TWI_MT_Stop_Condition(void)
 	
 }
 
+
+/************************************************************************/
+/* TRANSMITING DATA */
+/************************************************************************/
 uint8_t TWI_MT_Write_Data(uint8_t address, uint8_t n_data, uint8_t Trama[])
 {
 	uint8_t i = 0;
