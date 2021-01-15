@@ -35,6 +35,8 @@
 #define SDA					4
 #define SCL					5
 
+#define ADDRESS				1
+
 //Estado I2C
 #define TWI_OK				0
 #define TWI_ERROR			1
@@ -47,16 +49,27 @@ void TWI_MT_Stop_Condition(void);
 uint8_t TWI_MT_Re_Start_Condition(void);
 uint8_t TWI_MT_Write_Data(uint8_t address, uint8_t n_data, uint8_t Trama[]);
 
+//Variables
+uint8_t TWI_Buffer[20] = "Mi nombre es Jean";
+
 /*Función principal*/
 int main(void)
 {	
+	uint8_t Salida = 0;
+		
+	//Pull up interna del I2C
+	DDR_TW |= ((1<<SDA)|(1<<SCL));  //Salida 
+	PORT_TW |= ((1<<SDA)|(1<<SCL)); //Activando Pull-up
 		
 	//Bit Rate Generator Formula 
-	//TWBR = (uint8_t)(((F_CPU/(SCL_FREQ_KHZ*1000))-16)/(2*PRESCALER));
+	TWBR = (uint8_t)(((F_CPU/(SCL_FREQ_KHZ*1000))-16)/(2*PRESCALER));
 	
+	//Condiciones iniciales
+		
     while(1) 
     {	
-		
+		Salida = TWI_MT_Write_Data(ADDRESS,20,TWI_Buffer);
+		_delay_ms(100);
     }
 	
 	return 0;
