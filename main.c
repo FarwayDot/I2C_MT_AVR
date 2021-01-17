@@ -11,6 +11,7 @@
 #include <avr/io.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <util/delay.h>
 
 /*Definiciones*/
 
@@ -42,6 +43,8 @@
 #define TWI_ERROR			1
 
 /*Declaración de funciones*/
+
+//I2C
 uint8_t TWI_MT_Start_Condition(void);
 uint8_t TWI_MT_Address(uint8_t address, uint8_t r_nw);
 uint8_t TWI_MT_Data_Upload(uint8_t data);
@@ -49,18 +52,22 @@ void TWI_MT_Stop_Condition(void);
 uint8_t TWI_MT_Re_Start_Condition(void);
 uint8_t TWI_MT_Write_Data(uint8_t address, uint8_t n_data, uint8_t Trama[]);
 
+//UART
+void UART_Config();
+void UART_Caracter(uint8_t c);
+void UART_Cadena(uint8_t *str);
+
 //Variables
 uint8_t TWI_Buffer[20] = "Mi nombre es Jean";
 
 /*Función principal*/
 int main(void)
 {	
+
 	uint8_t Salida = 0;
-		
-	//Pull up interna del I2C
-	DDR_TW |= ((1<<SDA)|(1<<SCL));  //Salida 
-	PORT_TW |= ((1<<SDA)|(1<<SCL)); //Activando Pull-up
-		
+	
+	UART_Config();
+			
 	//Bit Rate Generator Formula 
 	TWBR = (uint8_t)(((F_CPU/(SCL_FREQ_KHZ*1000))-16)/(2*PRESCALER));
 	
@@ -70,6 +77,12 @@ int main(void)
     {	
 		Salida = TWI_MT_Write_Data(ADDRESS,20,TWI_Buffer);
 		_delay_ms(100);
+		
+		if(Salida == TWI_ERROR)
+		{
+				
+		}
+		
     }
 	
 	return 0;
@@ -240,4 +253,40 @@ uint8_t TWI_MT_Write_Data(uint8_t address, uint8_t n_data, uint8_t Trama[])
 	
 	return salida;
 	
+}
+
+void UART_Config()
+{
+	//Tx Salida
+	DDRD |= (1<<1);
+	PORTD &= ~(1<<0);
+	
+	//Habilitar Tx
+	UCSR0B |= (1<<TXEN0);
+	
+	//Modo Asincrono
+	UCSR0C &= ~((1<<UMSEL01) | (1<<UMSEL00));
+	//No paridad
+	UCSR0C &= ~((1<<UPM01) | (1<<UPM00));
+	//8bits
+	UCSR0B &= ~(1<<UCSZ02);
+	UCSR0C |= (1<<UCSZ01) | (1<<UCSZ00);
+	//BaudRate 9600
+	UBRR0 = 103; //fosc = 16Mhz
+}
+
+void UART_Caracter(uint8_t c)
+{
+	//Verificar el buffer si esta vacio: 1 Vacio, 0 Lleno
+	while(!(UCSR0A & (1<<UDRE0)));
+	UDR0 = c;
+}
+
+void UART_Cadena(uint8_t *str)
+{
+	while(*str != '\0')
+	{
+		UART_Caracter(*str);
+		str++; //Corrimiento de la direccion de memoria
+	}
 }
