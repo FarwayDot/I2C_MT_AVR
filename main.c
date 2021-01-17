@@ -63,13 +63,13 @@ void UART_Cadena(uint8_t *str);
 uint8_t TWI_Buffer[20] = "Mi nombre es Jean";
 
 //UART
-uint8_t UART_Msg_1[20] = "Error en el TWI";
+uint8_t UART_Msg_1[20] = "Error en el TWI\n";
 
 /*Función principal*/
 int main(void)
 {	
 
-	uint8_t Salida = 0;
+	uint8_t Salida = TWI_OK;
 	
 	UART_Config();
 			
@@ -145,12 +145,20 @@ uint8_t TWI_MT_Address(uint8_t address, uint8_t r_nw)
 	
 	//Checkeamos si la bandera se activa
 	while(!(TWCR & (1<<TWINT))); 
-		
-	//Checkeamos si es el estado correcto
-	if((TWSR & 0xF8) != STA_SLA_W_ACK)
+	
+	if(r_nw)
 	{
 		salida = TWI_ERROR;
 	}
+	else
+	{
+		//Checkeamos si es el estado correcto
+		if((TWSR & 0xF8) != STA_SLA_W_ACK)
+		{
+			salida = TWI_ERROR;
+		}			
+	}
+	
 	
 	return salida;
 }
@@ -228,7 +236,7 @@ uint8_t TWI_MT_Write_Data(uint8_t address, uint8_t n_data, uint8_t *ptr_buffer)
 	//Evaluamos el start condition
 	if(salida == TWI_ERROR)
 	{
-		salida = TWI_ERROR;
+		return salida;	
 	}
 	
 	//Asignamos la salida al resultado de enviar el ADDRESS + R/nW
@@ -236,7 +244,7 @@ uint8_t TWI_MT_Write_Data(uint8_t address, uint8_t n_data, uint8_t *ptr_buffer)
 	//Evaluamos el start condition
 	if(salida == TWI_ERROR)
 	{
-		salida = TWI_ERROR;
+		return salida;
 	}
 	
 	//Transitiendo data
@@ -251,7 +259,7 @@ uint8_t TWI_MT_Write_Data(uint8_t address, uint8_t n_data, uint8_t *ptr_buffer)
 	
 	if(salida == TWI_ERROR)
 	{
-		salida = TWI_ERROR;
+		return salida;
 	}
 	
 	//Deteniendo el I2C
