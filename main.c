@@ -58,7 +58,12 @@ void UART_Caracter(uint8_t c);
 void UART_Cadena(uint8_t *str);
 
 //Variables
+
+//I2C
 uint8_t TWI_Buffer[20] = "Mi nombre es Jean";
+
+//UART
+uint8_t UART_Msg_1[20] = "Error en el TWI";
 
 /*Función principal*/
 int main(void)
@@ -76,13 +81,14 @@ int main(void)
     while(1) 
     {	
 		Salida = TWI_MT_Write_Data(ADDRESS,20,TWI_Buffer);
-		_delay_ms(100);
 		
 		if(Salida == TWI_ERROR)
 		{
-				
+			UART_Cadena(UART_Msg_1);
+			_delay_ms(1000);	
 		}
 		
+		_delay_ms(100);
     }
 	
 	return 0;
@@ -212,7 +218,7 @@ void TWI_MT_Stop_Condition(void)
 /************************************************************************/
 /* TRANSMITING DATA */
 /************************************************************************/
-uint8_t TWI_MT_Write_Data(uint8_t address, uint8_t n_data, uint8_t Trama[])
+uint8_t TWI_MT_Write_Data(uint8_t address, uint8_t n_data, uint8_t *ptr_buffer)
 {
 	uint8_t i = 0;
 	uint8_t salida = TWI_OK;
@@ -236,7 +242,7 @@ uint8_t TWI_MT_Write_Data(uint8_t address, uint8_t n_data, uint8_t Trama[])
 	//Transitiendo data
 	for(i = 0; i<n_data; i++)
 	{
-		salida = TWI_MT_Data_Upload(Trama[i]);
+		salida = TWI_MT_Data_Upload(*(ptr_buffer + i));
 		if(salida == TWI_ERROR)
 		{
 			break;
